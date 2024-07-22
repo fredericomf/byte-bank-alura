@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql
+    container_name: mysql-estudo-java
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - 3306:3306

@@ -18,7 +18,7 @@ public class ContaDAO {
 
     public void salvar(DadosAberturaConta dadosDaConta) {
         var cliente = new Cliente(dadosDaConta.dadosCliente());
-        var conta = new Conta(dadosDaConta.numero(), BigDecimal.ZERO, cliente);
+        var conta = new Conta(dadosDaConta.numero(), BigDecimal.ZERO, cliente, true);
 
         String sql = "INSERT INTO conta (numero, saldo, cliente_nome, cliente_cpf, cliente_email)" +
                 "VALUES (?, ?, ?, ?, ?)";
@@ -31,6 +31,7 @@ public class ContaDAO {
             preparedStatement.setString(3, dadosDaConta.dadosCliente().nome());
             preparedStatement.setString(4, dadosDaConta.dadosCliente().cpf());
             preparedStatement.setString(5, dadosDaConta.dadosCliente().email());
+            preparedStatement.setBoolean(6, true);
 
             preparedStatement.execute();
             preparedStatement.close();
@@ -57,12 +58,13 @@ public class ContaDAO {
                 String nome = resultSet.getString(3);
                 String cpf = resultSet.getString(4);
                 String email = resultSet.getString(5);
+                Boolean estaAtiva = resultSet.getBoolean(6);
 
                 DadosCadastroCliente dadosCadastroCliente =
                         new DadosCadastroCliente(nome, cpf, email);
                 Cliente cliente = new Cliente(dadosCadastroCliente);
 
-                contas.add(new Conta(numero, saldo, cliente));
+                contas.add(new Conta(numero, saldo, cliente, estaAtiva));
             }
             resultSet.close();
             ps.close();
@@ -90,12 +92,13 @@ public class ContaDAO {
                 String nome = resultSet.getString(3);
                 String cpf = resultSet.getString(4);
                 String email = resultSet.getString(5);
+                Boolean estaAtiva = resultSet.getBoolean(6);
 
                 DadosCadastroCliente dadosCadastroCliente =
                         new DadosCadastroCliente(nome, cpf, email);
                 Cliente cliente = new Cliente(dadosCadastroCliente);
 
-                conta = new Conta(numeroRecuperado, saldo, cliente);
+                conta = new Conta(numeroRecuperado, saldo, cliente, estaAtiva);
             }
             resultSet.close();
             ps.close();
@@ -128,6 +131,39 @@ public class ContaDAO {
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deletar(Integer numeroDaConta) {
+        String sql = "DELETE FROM conta WHERE numero = ?";
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setInt(1, numeroDaConta);
+
+            ps.execute();
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void alterarLogico(Integer numeroDaConta) {
+        PreparedStatement ps;
+        String sql = "UPDATE conta SET esta_ativa = false WHERE numero = ?";
+
+        try {
+            ps = conn.prepareStatement(sql);
+
+            ps.setInt(1, numeroDaConta);
+
+            ps.execute();
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
